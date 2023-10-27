@@ -62,7 +62,6 @@ Para instanciar un alumno:
 Si uso `const`, hago que no pueda pisar ese alumno con uno nuevo u otra clase.
 
 # Clase 3
-*Intro Method Lookup. Diagrama de Clases.*
 
 Objetos pueden ser iguales pero no identicos. Es decir que pueden tener el mismo estado interno pero esto no significa que los objetos sean los mismos. 
 
@@ -74,4 +73,17 @@ object pdpNoche {
 	...
 }
 ```
+
+Cuando voy a filtrar o mapear, tengo que tener en cuenta el estado interno, no quiero perder informacion anterior. Tengo mensajes que causan efectos y otros que son consultas
+
+Algunas funcionalidades que no causan efectos:
+- map -> `pDePNoche.alumnos().map(XXXXXX)`
+- filter -> Tener cuidado con el filter ya que el contenido sigue apuntando a los mismos objetos
+- any
+
+El problema que tengo es que no existen funciones, por lo que tengo que pasar un objecto con un metodo para poner en el map => `pDePNoche.alumnos().map(funcionLegajo.apply()`. De todas maneras, tenemos un azucar sintactico para crear esto de una manera mas facil => `pDePNoche.alumnos().map({alumno=>alumno.legajo})`. Me crea un objecto anonimo.
+
+Lo mejor que puedo hacer es realizar estas funciones dentro de un metodo de una clase. (Ver docu)
+
+Para iterar sobre listas, podemos usar `[].forEach({alumno=>...})`, esto causa efecto y no me va a devolver nada. Por lo que esto lo vamos a usar cuando queremos causar un efecto destructivo elemento por elemento.
 

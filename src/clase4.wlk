@@ -5,88 +5,124 @@
 
 // Prestar atencion a quien puede delegar - Tomar menos decisiones por el otro 
 
+// Personaje clase abstracta - Lo uso para heredar
+// Clases de mi dominio
+// Rol va a ser una interfaz de los roles posibles. Tienen que entender el mismo mensaje
+
 class Personaje {
 	
-	//	Clase abstracta
-	var property fuerza
+	var property fuerza = 100 
 	var property inteligencia
 	var property rol
 	
-	method potencialOfensivo() = fuerza * 10 + rol.extra()
+	method potencialOfensivo() = 10 * fuerza + rol.potencialOfensivoExtra()
 	
-	method esGroso() = self.inteligente() || rol.esGroso(self)
+	method esGroso() = self.esInteligente() || rol.esGroso(self)
 	
+	// Metodos abstractos - no los defino - declaro que si quiero extender de esta clase, tengo q tener estos metodos
+	method esInteligente()
 }
 
-class Cazador {
-	var property mascota
-	
-	method extraPo() = mascota.potencialOf()
-	
-	method esGroso(p) = mascota.logeva()
-}
+// -------------------------------------------------
+// CLASES
+// -------------------------------------------------
 
-object guerrero {
-	method extraPo() = 100
+class Humano inherits Personaje {
 	
-	method esGroso(p) = p.fuerza() > 50
-}
-
-object brujo {
-	
-	method extraPo() = 1
-	
-	method esGroso(p) = true
+	override method esInteligente() = inteligencia > 50
 }
 
 class Orco inherits Personaje {
-	// super -> busca el metodo del padre	
-	override method potencialOfensivo() = super() * 1.1
 	
-	method intelgiente () = false;
+	
+	override method potencialOfensivo() = super() * 1.1	
+	
+	override method esInteligente() = false
 }
 
-class Humano inherits Personaje {
-	method inteligente() = inteligencia > 50
+// -------------------------------------------------
+// ROLES
+// -------------------------------------------------
+// Como no tienen atributos comunes, no hace falta una clase rol, uso interfaz. Para que sea polimorfico, tienen que entender el mismo mensaje
+
+object guerrero {
+	method potencialOfensivoExtra() = 10
+	
+	method esGroso(personaje) = personaje.fuerza() > 50
 }
+
+object brujo {
+	method potencialOfensivoExtra() = 0
+	
+	method esGroso(personaje) = true
+}
+
+class Cazador {
+	
+	var property mascota
+	
+	method potencialOfensivoExtra() = mascota.potenfialOfensivo()
+	
+	method esGroso(personaje) = mascota.esLongeva()
+}
+
+class Mascota {
+	
+	const property fuerza
+	const property edad
+	const property tieneGarras
+	
+	method potenfialOfensivo() = if (tieneGarras) fuerza * 2 else fuerza 
+	
+	method esLongeva() = edad > 10
+}
+
+
+// --------------------------------------------------------
+// ZONAS
+// --------------------------------------------------------
 
 class Ejercito {
-	var property personajes
 	
-	method pot() = personajes.sum({p => p.potencialOf()})
+	const property miembros = []
 	
-	method invadir(localidad) {
-		if (self.pot() > localidad.pot()) {
-			localidad.ocupadaPor(self)
+	method potencialOfensivo() = miembros.sum( {personaje => personaje.potencialOfensivo()} )
+	
+	method invadir(zona) {
+		if (zona.potencialDefensivo() < self.potencialOfensivo()) {
+			zona.esOcupadaPor(self)
 		}
 	}
+}
+
+// Hay aldeas y ciudades - interfaz o clase abstracta? Clase abstracta ya que aldea y ciudad tiene cosas en comun
+// Luego especifico lo q es distinto en las subclases
+
+class Zona {
 	
-	method partiteEn(max) {
-		const ps = personajes.sortBy({p => p.potencialOfensivo()}).take(max)
-		personajes.removeAll(ps)
-		
-		return new Ejercito(personajes=ps)
+	var habitantes
+	
+	method potencialDefensivo() = habitantes.potencialOfensivo()
+	
+	method esOcupadaPor(ejercito) { habitantes = ejercito } 
+}
+
+class Aldea inherits Zona {
+	const maximoHabitantes = 50
+	
+	override method esOcupadaPor(ejercito) {
+		if (ejercito.miembros().size() > maximoHabitantes) {
+			// Puedo delegar en el ejercito			
+			const nuevosHabitantes = ejercito.miembros().sortedBy( {uno, otro => uno.potencialOfensivo() > otro.potencialOfensivo()} ).take(10)
+			
+			super(new Ejercito(miembros = nuevosHabitantes))
+			
+			ejercito.miembros().removeAll(nuevosHabitantes)
+		} else { super(ejercito) }
 	}
 }
 
-class Localidad {
-	var property ejercito
+class Ciudad inherits Zona {
 	
-	method pot() = ejercito.pot()
-	
-	method ocupadaPor(eje) { ejercito = eje }
-} 
-
-class Ciudad inherits Localidad {
-	
-	override method pot() = super() + 300
-}
-
-class Aldea inherits Localidad {
-	
-	const property max = 10
-	
-	override method ocupadaPor(eje) {
-		super(eje.partiteEn(max)
-	}
+	override method potencialDefensivo() = super() + 300
 }

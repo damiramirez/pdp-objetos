@@ -143,4 +143,72 @@ Estática (no puedo cambiar la clase de un objeto en run-time, si creo otro obje
 Menos objetos -> Menos complejidad
 Es una relación entre clases! Es mucho más fuerte que la relación entre instancias planteada en composición. La herencia implica no sólo heredar código sino conceptos.
 
+# Clase 5
+*Manejo de errores - Los metodos tienen que hacer lo que prometen o frenar todo y explotar*
 
+## Errores y excepciones
+
+Como los objetos se comunican entre ellos, puede ser que cuando el emisor espera que el receptor haga una tarea, falle el método. Esto nos va a generar una excepción. Una **excepción** es un evento que altera el flujo normal de mensajes entre objetos. 
+
+Hay dos formas de expresar la generación de una excepción, una con un mensaje que entiende todo objeto y  otra instanciando una excepción, utilizando el concepto de clase.
+
+```wollok
+	// Enviando mensaje
+	self.error("Pasó tal cosa") 
+
+	// Instanciando una excepción 
+	throw new UserException(message = "Pasó tal cosa")
+```
+
+¿Cómo funciona? La clase UserException la definimos utilizando herencia:
+
+`class UserException inherits Exception { }`
+
+Por lo general, los objetos de dominio (el cliente, el alumno, el héroe, un ave) no suelen atrapar los errores. Más bien lo único que hacen es lanzar los errores o dejar que ocurran.
+
+## Excepciones de usuario y de programa
+
+- Excepciones de usuario o de dominio: ocurren en el uso de la aplicación y son entendibles para el usuario final (“no hay saldo en la cuenta corriente”, “no hay stock del producto a facturar”, “no hay precio del producto a facturar”, etc.)
+- Excepciones de programa: se producen cuando se ejecuta código de la aplicación y las puede analizar un especialista técnico (“falló el acceso al motor de la base de datos”, “hubo división por cero”, “el objeto no entiende este mensaje”, etc.)
+
+La naturaleza de ambos tipos de excepción son diferentes: en general las excepciones de negocio (o de aplicación) requieren que el usuario corrija la información que quiere ingresar al sistema, en tanto que las excepciones de programa requieren una corrección por parte de un usuario técnico.
+
+Por lo tanto, las acciones a tomar cuando armamos cada tipo de excepción son diferentes: en las excepciones de negocio intentamos que el usuario vea un mensaje amigable donde le mostramos el problema que hubo al tratar de completar una acción con un mensaje representativo (e incluso proponiéndole soluciones alternativas para que la tarea se realice), mientras que en las excepciones de programa también mostramos un mensaje amigable al usuario, pero reservamos todos los detalles internos al desarrollador. De esa manera, las excepciones terminan siendo una herramienta más que ayuda a que nuestra aplicación se vuelva más robusta y confiable.
+
+## Manejos de errores
+
+Si tenemos algo inteligente para hacer y resolver nuestras excepciones, vamos a poder usar un `try/catch`. A esto llamamos **capturar** errores. Podemos usar tantos catch como queremos. Los casos mas especificos vamos a ponerlos arriba.
+
+Podemos capturar distintos 'tipos' de excepciones. Vamos a poder capturar cosas mas especificas, usando una clase de excepciones y patrones.
+
+```wollok
+    ...
+	try {
+		...
+	} catch error: MiExcepcion {
+		...
+	}
+	
+	// Solo captura un error que sea de tipo MiExcepcion
+    ...
+    
+    
+    ... throw new MiExcepcion() ...
+    
+    
+    class MiExcepcion inherits DomainException {
+    		...
+	}
+```
+
+Cuando tenemos una situacion de dominio nueva, creamos una nueva excepcion con su respectiva clase, heredando de `DomainException`. 
+
+Tambien existe el `then always` que va al final del `try/catch`, que pase lo que pase, lo que este dentro de ese `then always` se ejecuta siempre.
+
+## Resumen
+
+Las excepciones nos sirven para modelar condiciones que salen del flujo normal del negocio. Para los objetos de dominio las formas correctas de usar este concepto es muy simple: 
+- en el caso de los errores de programa, no se pueden prever, así que no debemos hacer nada
+- en el caso de los errores de usuario, debemos detectarlos y alertar al usuario lo más tempranamente posible, tratando de dar un mensaje de las acciones que debe realizar para poder completar la acción que desea.
+
+Por último, hay mecanismos para atrapar las excepciones y volver al sistema a un estado consistente, aunque por lo general son raros los casos en el que un objeto de dominio puede hacer algo al respecto.

@@ -45,4 +45,6 @@ class Cartucho {
 
 class SinCargaException inherits DomainException {
 	const property carga
+	
+	
 }
